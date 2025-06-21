@@ -1,0 +1,24 @@
+name: Generate GitHub metrics
+
+on:
+  schedule:                   # 毎日 01:00(JST) に自動実行
+    - cron:  '0 16 * * *'
+  workflow_dispatch:          # 手動実行も可
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate metrics
+        uses: lowlighter/metrics@latest        # アクション本体
+        with:
+          user: ${{ github.repository_owner }} # あなたのユーザー名
+          template: classic                    # レイアウト
+          base: header, activity, community, repositories
+          config_timezone: Asia/Tokyo
+          plugin_lines: yes                    # グラフを有効化
+          plugin_languages: yes                # 言語円グラフ
+          plugin_languages_sections: most-used, recently-used
+        env:
+          # 先ほど登録したシークレット名
+          GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN }}
