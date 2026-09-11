@@ -1,9 +1,11 @@
 # README の <!-- activity starts --> ブロックを毎日書き換える。
 # private リポを含む集計値だけを出力し、リポ名とコミットメッセージは出さない。
+# metrics.yml も同じ main へコミットするので、push 前に必ず rebase する。
 name: Activity
 on:
   schedule: [{cron: "30 16 * * *"}]
   workflow_dispatch:
+  push: {branches: ["main"]}
 jobs:
   activity:
     runs-on: ubuntu-latest
@@ -45,8 +47,10 @@ jobs:
             exit 1
           fi
 
-          grep -q '<!-- activity starts -->' README.md
-          grep -q '<!-- activity ends -->' README.md
+          if ! grep -q '<!-- activity starts -->' README.md || ! grep -q '<!-- activity ends -->' README.md; then
+            echo "::error::activity markers not found in README.md"
+            exit 1
+          fi
 
           line="Last 30 days: ${commits} commits · ${prs} pull requests · ${repos} repositories — updated $(date -u +%Y-%m-%d)"
           awk -v line="$line" '
@@ -64,4 +68,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md
           git commit -m "chore(activity): refresh last 30 days"
+          git pull --rebase origin main
           git push
