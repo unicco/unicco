@@ -1,8 +1,8 @@
 Hi! I'm [@unicco](https://github.com/unicco).
 
 Engineer and entrepreneur. Founder of [Zaim](https://zaim.net/), a personal finance app with
-over 12 million downloads. These days I implement my own everyday life, on the themes of
-**recording** and **remembering**.
+over 12 million downloads. These days, I treat my everyday life as an engineering project —
+implementing new ways of **recording** and **remembering**.
 
 ---
 
