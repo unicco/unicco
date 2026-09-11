@@ -1,0 +1,67 @@
+# README の <!-- activity starts --> ブロックを毎日書き換える。
+# private リポを含む集計値だけを出力し、リポ名とコミットメッセージは出さない。
+name: Activity
+on:
+  schedule: [{cron: "30 16 * * *"}]
+  workflow_dispatch:
+jobs:
+  activity:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+
+      - name: Collect and write activity
+        env:
+          GH_TOKEN: ${{ secrets.METRICS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          gh api graphql \
+            -f login=unicco \
+            -f from="$(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)" \
+            -f to="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            -f query='query($login:String!,$from:DateTime!,$to:DateTime!){
+              user(login:$login){ contributionsCollection(from:$from,to:$to){
+                totalCommitContributions
+                restrictedContributionsCount
+                totalPullRequestContributions
+                commitContributionsByRepository(maxRepositories:100){repository{id}}
+                pullRequestContributionsByRepository(maxRepositories:100){repository{id}}
+              }}}' > stats.json
+
+          c=.data.user.contributionsCollection
+          commits=$(jq "$c.totalCommitContributions" stats.json)
+          restricted=$(jq "$c.restrictedContributionsCount" stats.json)
+          prs=$(jq "$c.totalPullRequestContributions" stats.json)
+          repos=$(jq "[$c | (.commitContributionsByRepository[].repository.id), (.pullRequestContributionsByRepository[].repository.id)] | unique | length" stats.json)
+          rm -f stats.json
+
+          # METRICS_TOKEN が private を読めないと commits が公開ぶんだけになり、
+          # 残りが restricted へ落ちる。黙って過少な数字を出さず job を落とす。
+          if [ "$restricted" -gt "$commits" ]; then
+            echo "::error::token cannot see private contributions (commits=$commits restricted=$restricted)"
+            exit 1
+          fi
+
+          grep -q '<!-- activity starts -->' README.md
+          grep -q '<!-- activity ends -->' README.md
+
+          line="Last 30 days: ${commits} commits · ${prs} pull requests · ${repos} repositories — updated $(date -u +%Y-%m-%d)"
+          awk -v line="$line" '
+            /<!-- activity starts -->/ { print; print line; skip = 1; next }
+            /<!-- activity ends -->/   { skip = 0 }
+            !skip                      { print }
+          ' README.md > README.next
+          mv README.next README.md
+
+          if git diff --quiet README.md; then
+            echo "no change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "chore(activity): refresh last 30 days"
+          git push
