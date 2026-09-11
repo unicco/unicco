@@ -62,22 +62,27 @@ jobs:
             exit 1
           fi
 
-          write_block() {
-            local name="$1" text="$2"
-            if ! grep -q "<!-- $name starts -->" README.md || ! grep -q "<!-- $name ends -->" README.md; then
-              echo "::error::$name markers not found in README.md"
-              exit 1
-            fi
-            awk -v name="$name" -v text="$text" '
-              $0 ~ "<!-- " name " starts -->" { print; print text; skip = 1; next }
-              $0 ~ "<!-- " name " ends -->"   { skip = 0 }
-              !skip                           { print }
-            ' README.md > README.next
-            mv README.next README.md
-          }
+          if ! grep -q '<!-- activity starts -->' README.md || ! grep -q '<!-- activity ends -->' README.md; then
+            echo "::error::activity markers not found in README.md"
+            exit 1
+          fi
+          awk -v text="Last 30 days: ${commits} commits · ${prs} pull requests · ${repos} repositories — updated $(date -u +%Y-%m-%d)" '
+            /<!-- activity starts -->/ { print; print text; skip = 1; next }
+            /<!-- activity ends -->/   { skip = 0 }
+            !skip                      { print }
+          ' README.md > README.next
+          mv README.next README.md
 
-          write_block activity "Last 30 days: ${commits} commits · ${prs} pull requests · ${repos} repositories — updated $(date -u +%Y-%m-%d)"
-          write_block recent-languages "**Recently used** — ${langs}"
+          if ! grep -q '<!-- recent-languages starts -->' README.md || ! grep -q '<!-- recent-languages ends -->' README.md; then
+            echo "::error::recent-languages markers not found in README.md"
+            exit 1
+          fi
+          awk -v text="**Recently used** — ${langs}" '
+            /<!-- recent-languages starts -->/ { print; print text; skip = 1; next }
+            /<!-- recent-languages ends -->/   { skip = 0 }
+            !skip                              { print }
+          ' README.md > README.next
+          mv README.next README.md
 
           if git diff --quiet README.md; then
             echo "no change"
