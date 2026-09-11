@@ -11,12 +11,16 @@ over 12 million downloads. These days I implement my own everyday life, on the t
 ---
 
 <!-- activity starts -->
-Last 30 days: — · — · — (not generated yet)
+Last 30 days: — (not generated yet)
 <!-- activity ends -->
 
 ---
 
 [![Languages](./metrics.languages.svg)](#)
+
+<!-- recent-languages starts -->
+**Recently used** — (not generated yet)
+<!-- recent-languages ends -->
 
 ---
 

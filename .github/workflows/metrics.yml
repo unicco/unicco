@@ -1,6 +1,8 @@
 # 草と言語比率だけを描く。ほかの指標（follower・star・Sponsors・Packages）は
 # GitHub 標準のプロフィール UI と重複するか、0 が並んで実態より弱く見えるので出さない。
 # 出力はどちらも集計値のみで、private リポ名とコミットメッセージは含まれない。
+# recently-used は指定しない。indepth が要るうえ public の events しか辿らず、
+# private 中心のこのアカウントでは古い public リポに寄った数字になる（activity.yml が自前で出す）。
 name: Metrics
 on:
   schedule: [{cron: "0 16 * * *"}]
@@ -36,8 +38,6 @@ jobs:
           config_padding: 8
           config_timezone: Asia/Tokyo
           plugin_languages: yes
-          plugin_languages_indepth: yes
-          plugin_languages_sections: most-used, recently-used
+          plugin_languages_sections: most-used
           plugin_languages_details: percentage
           plugin_languages_limit: 8
-          plugin_languages_recent_days: 30
