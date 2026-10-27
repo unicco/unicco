@@ -18,10 +18,6 @@ Last 30 days: — (not generated yet)
 
 [![Languages](./metrics.languages.svg)](#)
 
-<!-- recent-languages starts -->
-**Recently used** — (not generated yet)
-<!-- recent-languages ends -->
-
 ---
 
 ### Interviews
