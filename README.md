@@ -11,7 +11,7 @@ implementing new ways of **recording** and **remembering**.
 ---
 
 <!-- activity starts -->
-Last 30 days: 788 commits · 526 pull requests — updated 2026-11-22
+Last 30 days: 699 commits · 467 pull requests — updated 2026-11-24
 <!-- activity ends -->
 
 ---
